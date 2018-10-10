@@ -1,6 +1,7 @@
-## unreleased
+## v1.0.1378 (2018-10-10)
 
 - updated image in integration test(#524)
+- Created new env var WERCKER_GIT_TAG (#523)
 
 ## v1.0.1359 (2018-09-21)
 

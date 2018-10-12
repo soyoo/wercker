@@ -1,5 +1,8 @@
 ## unreleased
 
+
+- suppress build logs(#522)
+
 ## v1.0.1378 (2018-10-10)
 
 - updated image in integration test(#524)

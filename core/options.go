@@ -456,7 +456,8 @@ type PipelineOptions struct {
 
 	DefaultsUsed PipelineDefaultsUsed
 
-	WorkflowsInYml bool
+	WorkflowsInYml    bool
+	SuppressBuildLogs bool
 }
 
 type PipelineDefaultsUsed struct {
@@ -663,6 +664,7 @@ func NewPipelineOptions(c util.Settings, e *util.Environment) (*PipelineOptions,
 	attachOnError, _ := c.Bool("attach-on-error")
 	directMount, _ := c.Bool("direct-mount")
 	enableDevSteps, _ := c.Bool("enable-dev-steps")
+	suppressBuildLogs, _ := c.Bool("suppress-build-logs")
 	// Deprecated
 	publishPorts, _ := c.StringSlice("publish")
 	exposePorts, _ := c.Bool("expose-ports")
@@ -722,9 +724,10 @@ func NewPipelineOptions(c util.Settings, e *util.Environment) (*PipelineOptions,
 		SourceDir:         sourceDir,
 		IgnoreFile:        ignoreFile,
 
-		AttachOnError:  attachOnError,
-		DirectMount:    directMount,
-		EnableDevSteps: enableDevSteps,
+		AttachOnError:     attachOnError,
+		DirectMount:       directMount,
+		EnableDevSteps:    enableDevSteps,
+		SuppressBuildLogs: suppressBuildLogs,
 		// Deprecated
 		PublishPorts:  publishPorts,
 		ExposePorts:   exposePorts,

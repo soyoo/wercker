@@ -1,5 +1,7 @@
 ## unreleased
 
+- Make direct docker access available to everyone (#528)
+
 ## v1.0.1380 (2018-10-12)
 
 - suppress build logs(#522)

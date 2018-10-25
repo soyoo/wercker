@@ -148,5 +148,5 @@ OPTIONS
   Default;;
     300s
 --allow-rdd::
-  Access control flag for remote docker deamon run.
+  No longer used.
   

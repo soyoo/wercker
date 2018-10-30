@@ -1,5 +1,7 @@
 ## unreleased
 
+## v1.0.1398 (2018-10-30)
+
 - Remove redundant flag --allow-rdd (#530)
 
 ## v1.0.1393 (2018-10-25)

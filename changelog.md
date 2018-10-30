@@ -1,5 +1,7 @@
 ## unreleased
 
+- Remove redundant flag --allow-rdd (#530)
+
 ## v1.0.1393 (2018-10-25)
 
 - Make direct docker access available to everyone (#528)

@@ -1,5 +1,7 @@
 ## unreleased
 
+## v1.0.XXXX (2018-11-02)
+
 - Fix SyncEnvironment for alpine images (#531)
 
 ## v1.0.1399 (2018-10-31)

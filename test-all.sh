@@ -213,6 +213,8 @@ runTests() {
     basicTest "fetch from gcr"            build "$testsDir/gcr-test" || return 1
     basicTest "fetch from docker hub v1"  build "$testsDir/reg-v1-test" || return 1
   fi
+
+  source $testsDir/sync-env-alpine/test.sh || return 1
 }
 
 pullImages

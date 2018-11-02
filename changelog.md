@@ -1,5 +1,7 @@
 ## unreleased
 
+- Fix SyncEnvironment for alpine images (#531)
+
 ## v1.0.1399 (2018-10-31)
 
 - Remove redundant flag --allow-rdd (#530)

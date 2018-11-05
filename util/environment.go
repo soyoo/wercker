@@ -106,7 +106,11 @@ func (e *Environment) Export(noInterpolation bool) []string {
 	s := []string{}
 	for _, key := range e.Order {
 		if noInterpolation || e.contains(key) {
-			s = append(s, fmt.Sprintf(`export %s='%s'`, key, e.Map[key]))
+			value := e.Map[key]
+			if strings.Contains(value, "'") {
+				value = strings.Replace(value, "'", "'\"'\"'", -1)
+			}
+			s = append(s, fmt.Sprintf(`export %s='%s'`, key, value))
 		} else {
 			export := fmt.Sprintf(`export %s=%q`, key, e.Map[key])
 			export = strings.Replace(export, "`", "\\`", -1)

@@ -1,5 +1,30 @@
 ## unreleased
 
+## v1.0.1401 (2018-11-02)
+
+- Fix SyncEnvironment for alpine images (#531)
+
+## v1.0.1399 (2018-10-31)
+
+- Remove redundant flag --allow-rdd (#530)
+
+## v1.0.1393 (2018-10-25)
+
+- Make direct docker access available to everyone (#528)
+
+## v1.0.1380 (2018-10-12)
+
+- suppress build logs(#522)
+
+## v1.0.1378 (2018-10-10)
+
+- updated image in integration test(#524)
+- Created new env var WERCKER_GIT_TAG (#523)
+
+## v1.0.1359 (2018-09-21)
+
+- Fix env vars WERCKER_DEPLOY_URL, WERCKER_BUILD_URL and WERCKER_RUN_URL (#519)
+
 ## v1.0.1355 (2018-09-17)
 
 - Inject checkout pipeline for workflows in yml (#517)

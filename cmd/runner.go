@@ -108,18 +108,20 @@ func NewRunner(ctx context.Context, options *core.PipelineOptions, dockerOptions
 		dh := core.NewDebugHandler()
 		dh.ListenTo(e)
 	}
-
-	l, err := event.NewLiteralLogHandler(options)
-	if err != nil {
-		logger.WithField("Error", err).Panic("Unable to event.LiteralLogHandler")
+	var l *event.LiteralLogHandler
+	if !options.SuppressBuildLogs {
+		l, err = event.NewLiteralLogHandler(options)
+		if err != nil {
+			logger.WithError(err).Panic("Unable to create event.LiteralLogHandler")
+		}
+		l.ListenTo(e)
 	}
-	l.ListenTo(e)
 
 	var r *event.ReportHandler
 	if options.ShouldReport {
 		r, err := event.NewReportHandler(options.ReporterHost, options.ReporterKey)
 		if err != nil {
-			logger.WithField("Error", err).Panic("Unable to event.ReportHandler")
+			logger.WithError(err).Panic("Unable to create event.ReportHandler")
 		}
 		r.ListenTo(e)
 	}
@@ -579,13 +581,6 @@ func (p *Runner) SetupEnvironment(runnerCtx context.Context) (*RunnerShared, err
 	if rawConfig.PipelinesMap[p.options.Pipeline].Docker {
 		// pipeline specifies "docker:true" which means it requires direct access to a docker daemon
 		if p.dockerOptions.RddServiceURI != "" {
-			if !p.dockerOptions.AllowRDD {
-				p.emitter.Emit(core.Logs, &core.LogsArgs{
-					Logs: "User doesn't have Remote docker deamon access rights.",
-				})
-				return shared, fmt.Errorf("User doesn't have Remote docker deamon access rights.")
-			}
-
 			// a Remote Docker Daemon API Service is available (i.e. we're not running locally) so use it to provision a daemon
 			p.emitter.Emit(core.Logs, &core.LogsArgs{
 				Logs: "Setting up Remote Docker environment...\n",

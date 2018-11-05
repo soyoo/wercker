@@ -270,6 +270,7 @@ func (p *BasePipeline) LogEnvironment() {
 // container.
 func (p *BasePipeline) SyncEnvironment(sessionCtx context.Context, sess *Session) error {
 	p.logger.Debugln("Syncing environment")
+	var lines []string
 
 	sess.HideLogs()
 	defer sess.ShowLogs()
@@ -277,17 +278,27 @@ func (p *BasePipeline) SyncEnvironment(sessionCtx context.Context, sess *Session
 	// 'env' with --null parameter, which prevents issues from overlapping \n
 	// inside the values.
 	exit, output, err := sess.SendChecked(sessionCtx, "set +e", "env --null", "set -e")
+	err = checkError(exit, output, err)
 	if err != nil {
 		return err
 	}
 
-	if exit != 0 {
-		return fmt.Errorf("Unable to sync environment, exit code: %d", exit)
-	}
+	// send just 'env' if 'env --null' has failed (e.g. for alpine images)
+	if strings.HasPrefix(output[0], "env: unrecognized option: null") {
+		exit, output, err = sess.SendChecked(sessionCtx, "set +e", "env", "set -e")
+		err = checkError(exit, output, err)
+		if err != nil {
+			return err
+		}
 
-	// Concat every output line into a single string, then split on the null byte
-	full := strings.Join(output, "")
-	lines := strings.Split(full, "\x00")
+		// Concat every output line into a single string, then split on the newline
+		full := strings.Join(output, "")
+		lines = strings.Split(full, "\n")
+	} else {
+		// Concat every output line into a single string, then split on the null byte
+		full := strings.Join(output, "")
+		lines = strings.Split(full, "\x00")
+	}
 
 	for _, line := range lines {
 		if line == "" {
@@ -295,7 +306,6 @@ func (p *BasePipeline) SyncEnvironment(sessionCtx context.Context, sess *Session
 		}
 
 		s := strings.SplitN(line, "=", 2)
-
 		if len(s) != 2 {
 			p.logger.Warnf("Unable to parse env line: \"%s\"", line)
 			continue
@@ -313,4 +323,20 @@ func (p *BasePipeline) SyncEnvironment(sessionCtx context.Context, sess *Session
 //Docker - returns true if the build requires a Remote Docker Daemon
 func (p *BasePipeline) Docker() bool {
 	return p.config.Docker
+}
+
+func checkError(exit int, output []string, err error) error {
+	if err != nil {
+		return err
+	}
+
+	if exit != 0 {
+		return fmt.Errorf("Unable to sync environment, exit code: %d", exit)
+	}
+
+	if output == nil || len(output) == 0 {
+		return fmt.Errorf("No output returned by env command from container")
+	}
+
+	return nil
 }

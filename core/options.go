@@ -191,6 +191,7 @@ func NewOCIOptions(c util.Settings, e *util.Environment, globalOpts *GlobalOptio
 type GitOptions struct {
 	*GlobalOptions
 	GitBranch     string
+	GitTag        string
 	GitCommit     string
 	GitDomain     string
 	GitOwner      string
@@ -226,7 +227,47 @@ func guessGitBranch(c util.Settings, e *util.Environment) string {
 	if err != nil {
 		return ""
 	}
-	return strings.Trim(out.String(), "\n")
+	branch = strings.Trim(out.String(), "\n")
+	// In case of tag, branch output is HEAD.
+	if branch == "HEAD" {
+		return ""
+	}
+	return branch
+}
+
+func guessGitTag(c util.Settings, e *util.Environment) string {
+	tag, _ := c.String("git-tag")
+	if tag != "" {
+		return tag
+	}
+	projectPath := guessProjectPath(c, e)
+	if projectPath == "" {
+		return ""
+	}
+	cwd, err := os.Getwd()
+	if err != nil {
+		return ""
+	}
+	defer os.Chdir(cwd)
+	os.Chdir(projectPath)
+
+	git, err := exec.LookPath("git")
+	if err != nil {
+		return ""
+	}
+
+	var out bytes.Buffer
+	cmd := exec.Command(git, "tag", "--points-at", "HEAD")
+	cmd.Stdout = &out
+	err = cmd.Run()
+	if err != nil {
+		return ""
+	}
+
+	cmdOut := strings.TrimSuffix(out.String(), "\n")
+	arr := strings.Split(cmdOut, "\n")
+
+	return arr[len(arr)-1]
 }
 
 func guessGitCommit(c util.Settings, e *util.Environment) string {
@@ -289,6 +330,7 @@ func guessGitRepository(c util.Settings, e *util.Environment) string {
 // NewGitOptions constructor
 func NewGitOptions(c util.Settings, e *util.Environment, globalOpts *GlobalOptions) (*GitOptions, error) {
 	gitBranch := guessGitBranch(c, e)
+	gitTag := guessGitTag(c, e)
 	gitCommit := guessGitCommit(c, e)
 	gitDomain, _ := c.String("git-domain")
 	gitOwner := guessGitOwner(c, e)
@@ -297,6 +339,7 @@ func NewGitOptions(c util.Settings, e *util.Environment, globalOpts *GlobalOptio
 	return &GitOptions{
 		GlobalOptions: globalOpts,
 		GitBranch:     gitBranch,
+		GitTag:        gitTag,
 		GitCommit:     gitCommit,
 		GitDomain:     gitDomain,
 		GitOwner:      gitOwner,
@@ -413,7 +456,8 @@ type PipelineOptions struct {
 
 	DefaultsUsed PipelineDefaultsUsed
 
-	WorkflowsInYml bool
+	WorkflowsInYml    bool
+	SuppressBuildLogs bool
 }
 
 type PipelineDefaultsUsed struct {
@@ -620,6 +664,7 @@ func NewPipelineOptions(c util.Settings, e *util.Environment) (*PipelineOptions,
 	attachOnError, _ := c.Bool("attach-on-error")
 	directMount, _ := c.Bool("direct-mount")
 	enableDevSteps, _ := c.Bool("enable-dev-steps")
+	suppressBuildLogs, _ := c.Bool("suppress-build-logs")
 	// Deprecated
 	publishPorts, _ := c.StringSlice("publish")
 	exposePorts, _ := c.Bool("expose-ports")
@@ -679,9 +724,10 @@ func NewPipelineOptions(c util.Settings, e *util.Environment) (*PipelineOptions,
 		SourceDir:         sourceDir,
 		IgnoreFile:        ignoreFile,
 
-		AttachOnError:  attachOnError,
-		DirectMount:    directMount,
-		EnableDevSteps: enableDevSteps,
+		AttachOnError:     attachOnError,
+		DirectMount:       directMount,
+		EnableDevSteps:    enableDevSteps,
+		SuppressBuildLogs: suppressBuildLogs,
 		// Deprecated
 		PublishPorts:  publishPorts,
 		ExposePorts:   exposePorts,
@@ -723,7 +769,7 @@ func (o *PipelineOptions) SourcePath() string {
 }
 
 func (o *PipelineOptions) WorkflowURL() string {
-	return fmt.Sprintf("%s/#%s/%s/%s/%s", o.BaseURL, o.ApplicationOwnerName, o.ApplicationName, o.Pipeline, o.RunID)
+	return fmt.Sprintf("%s/%s/%s/runs/%s/%s", o.BaseURL, o.ApplicationOwnerName, o.ApplicationName, o.Pipeline, o.RunID)
 }
 
 // MntPath returns a path relative to the read-only mount root on the guest.

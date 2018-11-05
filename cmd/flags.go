@@ -18,7 +18,7 @@ import (
 	"time"
 
 	"github.com/wercker/wercker/core"
-	"gopkg.in/urfave/cli.v1"
+	cli "gopkg.in/urfave/cli.v1"
 )
 
 // Flags for setting these options from the CLI
@@ -54,7 +54,6 @@ var (
 		cli.StringFlag{Name: "docker-network", Value: "", Usage: "Docker network name.", Hidden: true},
 		cli.StringFlag{Name: "rdd-service-uri", Value: "", Usage: "Rempte Docker Daemon API Service endpoint", Hidden: true},
 		cli.DurationFlag{Name: "rdd-provision-timeout", Value: 300 * time.Second, Usage: "Timeout for Remote Docker Daemon provisioning from Remote Docker Daemon API Service", Hidden: true},
-		cli.BoolFlag{Name: "allow-rdd", Usage: "Access control flag for Remote Docker Deamon run", Hidden: true},
 	}
 
 	// These flags control where we store local files
@@ -93,6 +92,7 @@ var (
 		cli.StringFlag{Name: "git-owner", Value: "", Usage: "Git owner.", EnvVar: "WERCKER_GIT_OWNER", Hidden: true},
 		cli.StringFlag{Name: "git-repository", Value: "", Usage: "Git repository.", EnvVar: "WERCKER_GIT_REPOSITORY", Hidden: true},
 		cli.StringFlag{Name: "git-branch", Value: "", Usage: "Git branch.", EnvVar: "WERCKER_GIT_BRANCH", Hidden: true},
+		cli.StringFlag{Name: "git-tag", Value: "", Usage: "Git tag.", EnvVar: "WERCKER_GIT_TAG", Hidden: true},
 		cli.StringFlag{Name: "git-commit", Value: "", Usage: "Git commit.", EnvVar: "WERCKER_GIT_COMMIT", Hidden: true},
 	}
 
@@ -128,6 +128,7 @@ var (
 	InternalDevFlags = []cli.Flag{
 		cli.BoolTFlag{Name: "direct-mount", Usage: "Mount our binds read-write to the pipeline path."},
 		cli.BoolFlag{Name: "expose-ports", Usage: "Enable ports from wercker.yml beeing exposed to the host system."},
+		cli.BoolFlag{Name: "suppress-build-logs", Usage: "If specified, output from steps is not logged", Hidden: true},
 		// deprecated
 		cli.StringSliceFlag{Name: "publish", Value: &cli.StringSlice{}, Usage: "[Deprecated] Use: --expose-ports. - Publish a port from the main container, same format as docker --publish.", Hidden: true},
 		cli.BoolFlag{Name: "attach-on-error", Usage: "Attach shell to container if a step fails.", Hidden: true},
@@ -143,6 +144,8 @@ var (
 	InternalBuildFlags = []cli.Flag{
 		cli.BoolFlag{Name: "direct-mount", Usage: "Mount our binds read-write to the pipeline path."},
 		cli.BoolFlag{Name: "expose-ports", Usage: "Enable ports from wercker.yml beeing exposed to the host system."},
+		cli.BoolFlag{Name: "suppress-build-logs", Usage: "If specified, output from steps is not logged", Hidden: true},
+
 		// deprecated
 		cli.StringSliceFlag{Name: "publish", Value: &cli.StringSlice{}, Usage: "[Deprecated] Use: --expose-ports. - Publish a port from the main container, same format as docker --publish.", Hidden: true},
 		cli.BoolFlag{Name: "attach-on-error", Usage: "Attach shell to container if a step fails.", Hidden: true},
@@ -158,6 +161,7 @@ var (
 	// Flags for advanced deploy settings
 	InternalDeployFlags = []cli.Flag{
 		cli.BoolFlag{Name: "expose-ports", Usage: "Enable ports from wercker.yml beeing exposed to the host system."},
+		cli.BoolFlag{Name: "suppress-build-logs", Usage: "If specified, output from steps is not logged", Hidden: true},
 		// deprecated
 		cli.StringSliceFlag{Name: "publish", Value: &cli.StringSlice{}, Usage: "[Deprecated] Use: --expose-ports. - Publish a port from the main container, same format as docker --publish.", Hidden: true},
 		cli.BoolFlag{Name: "attach-on-error", Usage: "Attach shell to container if a step fails.", Hidden: true},

@@ -1,4 +1,6 @@
 ## unreleased
+- Fix problems with OCI environment settings passed to kiddie-pool for runners.
+- Issue error message when store-oci and storepath are both specified in the wercker command
 
 ## v1.0.1401 (2018-11-02)
 

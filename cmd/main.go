@@ -512,6 +512,7 @@ func setupExternalRunnerParams(c *cli.Context, params *external.RunnerParams) er
 
 	// OCI object store parameters
 	params.OCIOptions = opts.OCIOptions
+	params.OCIDownload = opts.OCIDownload
 
 	return nil
 }

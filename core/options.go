@@ -141,7 +141,7 @@ func NewAWSOptions(c util.Settings, e *util.Environment, globalOpts *GlobalOptio
 const OCI_TENANCY_OCID = "oci-tenancy-ocid"
 const OCI_USER_OCID = "oci-user-ocid"
 const OCI_REGION = "oci-region"
-const OCI_PRIVATE_KEY_PATH = "oci-private-kay-path"
+const OCI_PRIVATE_KEY_PATH = "oci-private-key-path"
 const OCI_PRIVATE_KEY_PASSPHRASE = "oci-private-key-passphrase"
 const OCI_FINGERPRINT = "oci-fingerprint"
 const OCI_BUCKET = "oci-bucket"
@@ -1079,6 +1079,7 @@ type WerckerRunnerOptions struct {
 	PullRemote     bool
 	Production     bool
 	OCIOptions     *OCIOptions
+	OCIDownload    string
 }
 
 // NewExternalRunnerOptions -
@@ -1103,6 +1104,7 @@ func NewExternalRunnerOptions(c util.Settings, e *util.Environment) (*WerckerRun
 	pulls, _ := c.Bool("pull")
 	image, _ := c.String("image-name")
 	storeOCI, _ := c.Bool("store-oci")
+	download, _ := c.String("oci-download")
 
 	prod := false
 	site, _ := c.String("using")
@@ -1117,14 +1119,20 @@ func NewExternalRunnerOptions(c util.Settings, e *util.Environment) (*WerckerRun
 	// Determine if OCI object store or the local file system will be used
 	var ociOpts *OCIOptions
 	if storeOCI {
+		if spath != "" {
+			// Make sure storepath is not specified as it will confuse kiddie-pool
+			return nil, errors.New("--store-oci and --storepath are incapatible specified together")
+		}
 		ociOpts, err = NewOCIOptions(c, e, globalOpts)
 		if err != nil {
 			return nil, err
 		}
-	} else if spath == "" {
-		spath = "/tmp/wercker"
+	} else {
+		if spath == "" {
+			spath = "/tmp/wercker"
+		}
+		os.MkdirAll(spath, 0776)
 	}
-	os.MkdirAll(spath, 0776)
 
 	return &WerckerRunnerOptions{
 		GlobalOptions:  globalOpts,
@@ -1145,6 +1153,7 @@ func NewExternalRunnerOptions(c util.Settings, e *util.Environment) (*WerckerRun
 		Production:     prod,
 		ImageName:      image,
 		OCIOptions:     ociOpts,
+		OCIDownload:    download,
 	}, nil
 }
 

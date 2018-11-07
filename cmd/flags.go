@@ -330,6 +330,7 @@ var (
 		cli.StringFlag{Name: "workflows", Usage: "comma separated list of workflows, format: org-name/app-name/workflow-name for each."},
 		cli.StringFlag{Name: "storepath", Usage: "local file system path for storing runner output", EnvVar: "WERCKER_RUNNER_STOREPATH"},
 		cli.StringFlag{Name: "logpath", Usage: "local file system path for storing log files"},
+		cli.StringFlag{Name: "oci-download", Usage: "manual rest endpoint for OCI artifact download"},
 		cli.IntFlag{Name: "runners", Value: 1, Usage: "number of runners to start, default is one"},
 		cli.IntFlag{Name: "poll-frequency", Value: 5, Usage: "number of seconds between runner polling for a job"},
 		cli.StringFlag{Name: "token", Usage: "bearer token for runner", EnvVar: "WERCKER_RUNNER_TOKEN"},

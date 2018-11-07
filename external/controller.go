@@ -62,6 +62,7 @@ type RunnerParams struct {
 	PollFreq       int    // Polling frequency
 	DockerEndpoint string // docker endpoint
 	OCIOptions     *core.OCIOptions
+	OCIDownload    string // OCI Download endpoint
 	// following values are set during processing
 	Basename      string // base name for container creation
 	Logger        *util.LogEntry
@@ -280,6 +281,9 @@ func (cp *RunnerParams) createTheRunnerCommand(name string) ([]string, error) {
 	if cp.StorePath != "" {
 		cmd = append(cmd, fmt.Sprintf("--runner-store-path=%s", cp.StorePath))
 	}
+	if cp.OCIDownload != "" {
+		cmd = append(cmd, fmt.Sprintf("--runner-operator-url=%s", cp.OCIDownload))
+	}
 	if cp.OCIOptions != nil {
 		if cp.OCIOptions.Namespace != "" {
 			cmd = append(cmd, fmt.Sprintf("--runner-obj-store-namespace=%s", cp.OCIOptions.Namespace))
@@ -331,14 +335,14 @@ func (cp *RunnerParams) startTheContainer(name string, cmd []string) error {
 		if opts.TenancyOCID == "" || opts.UserOCID == "" || opts.Region == "" || opts.PrivateKeyPath == "" || opts.Fingerprint == "" {
 			cp.Logger.Fatal("Missing OCI object store access credentials")
 		}
-		myenv = append(myenv, "WERCKER_OCI_TENANCY_OCID", opts.TenancyOCID)
-		myenv = append(myenv, "WERCKER_OCI_USER_OCID", opts.UserOCID)
-		myenv = append(myenv, "WERCKER_OCI_REGION", opts.Region)
-		myenv = append(myenv, "WERCKER_OCI_PRIVATE_KEY_PATH", opts.PrivateKeyPath)
-		myenv = append(myenv, "WERCKER_OCI_FINGERPRINT", opts.Fingerprint)
+		myenv = append(myenv, fmt.Sprintf("WERCKER_OCI_TENANCY_OCID=%s", opts.TenancyOCID))
+		myenv = append(myenv, fmt.Sprintf("WERCKER_OCI_USER_OCID=%s", opts.UserOCID))
+		myenv = append(myenv, fmt.Sprintf("WERCKER_OCI_REGION=%s", opts.Region))
+		myenv = append(myenv, fmt.Sprintf("WERCKER_OCI_PRIVATE_KEY_PATH=%s", opts.PrivateKeyPath))
+		myenv = append(myenv, fmt.Sprintf("WERCKER_OCI_FINGERPRINT=%s", opts.Fingerprint))
 		// optional value
 		if opts.PrivateKeyPassphrase != "" {
-			myenv = append(myenv, "WERCKER_OCI_PRIVATE_KEY_PASSPHRASE", opts.PrivateKeyPassphrase)
+			myenv = append(myenv, fmt.Sprintf("WERCKER_OCI_PRIVATE_KEY_PASSPHRASE=%s", opts.PrivateKeyPassphrase))
 		}
 	} else if cp.StorePath == "" {
 		// This is deprecated and should be change to Oracle cloud eventually

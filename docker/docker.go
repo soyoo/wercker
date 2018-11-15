@@ -734,10 +734,12 @@ func InferRegistryAndRepository(ctx context.Context, repository string, registry
 // InitEnv parses our data into our config
 func (s *DockerPushStep) InitEnv(ctx context.Context, env *util.Environment) error {
 	e, _ := core.EmitterFromContext(ctx)
-	for _, pair := range env.Ordered() {
-		e.Emit(core.Logs, &core.LogsArgs{
-			Logs: fmt.Sprintf("%s %s\n", pair[0], pair[1]),
-		})
+	if env != nil {
+		for _, pair := range env.Ordered() {
+			e.Emit(core.Logs, &core.LogsArgs{
+				Logs: fmt.Sprintf("%s %s\n", pair[0], pair[1]),
+			})
+		}
 	}
 
 	err := s.configure(env)

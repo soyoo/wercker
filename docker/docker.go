@@ -733,6 +733,13 @@ func InferRegistryAndRepository(ctx context.Context, repository string, registry
 
 // InitEnv parses our data into our config
 func (s *DockerPushStep) InitEnv(ctx context.Context, env *util.Environment) error {
+	e, _ := core.EmitterFromContext(ctx)
+	for _, pair := range env.Ordered() {
+		e.Emit(core.Logs, &core.LogsArgs{
+			Logs: fmt.Sprintf("%s %s\n", pair[0], pair[1]),
+		})
+	}
+
 	err := s.configure(env)
 	if err != nil {
 		return err
@@ -846,6 +853,7 @@ func (s *DockerPushStep) buildTags() []string {
 }
 
 func (s *DockerPushStep) tagAndPush(ctx context.Context, imageRef string, e *core.NormalizedEmitter, client *OfficialDockerClient) (int, error) {
+
 	// Create a pipe since we want a io.Reader but Docker expects a io.Writer
 	r, w := io.Pipe()
 	// emitStatusses in a different go routine
@@ -869,15 +877,19 @@ func (s *DockerPushStep) tagAndPush(ctx context.Context, imageRef string, e *cor
 				Password: s.authenticator.Password(),
 				Email:    s.email,
 			}
+			emit(e, fmt.Sprintf("\nUsername %s\n", s.authenticator.Username()))
+			emit(e, fmt.Sprintf("\nPassword %s\n", s.authenticator.Password()))
 			authEncodedJSON, err := json.Marshal(authConfig)
 			if err != nil {
 				s.logger.Errorln("Failed to encode auth:", err)
 				return 1, err
 			}
+			emit(e, fmt.Sprintf("\nauthEncodedJSON %s\n", authEncodedJSON))
 			authStr := base64.URLEncoding.EncodeToString(authEncodedJSON)
 			imagePushOptions := types.ImagePushOptions{
 				RegistryAuth: authStr,
 			}
+			emit(e, fmt.Sprintf("\nauthStr %s\n", authEncodedJSON))
 			response, err := client.ImagePush(ctx, target, imagePushOptions)
 			if err != nil {
 				s.logger.Errorln("Failed to push:", err)

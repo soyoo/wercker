@@ -270,12 +270,12 @@ func (p *BasePipeline) SyncEnvironment(sessionCtx context.Context, sess *Session
 	p.logger.Infoln("Start Syncing environment")
 	e, _ := EmitterFromContext(sessionCtx)
 	e.Emit(Logs, &LogsArgs{
-		Logs: "Start Syncing environment",
+		Logs: "Start Syncing environment\n",
 	})
 
 	for _, pair := range p.env.Ordered() {
 		e.Emit(Logs, &LogsArgs{
-			Logs: fmt.Sprintf("%s %s", pair[0], pair[1]),
+			Logs: fmt.Sprintf("%s %s\n", pair[0], pair[1]),
 		})
 		p.logger.Infoln(" ", pair[0], pair[1])
 	}
@@ -327,11 +327,11 @@ func (p *BasePipeline) SyncEnvironment(sessionCtx context.Context, sess *Session
 	}
 	p.logger.Infoln("End Syncing environment")
 	e.Emit(Logs, &LogsArgs{
-		Logs: "End Syncing environment",
+		Logs: "End Syncing environment\n",
 	})
 	for _, pair := range p.env.Ordered() {
 		e.Emit(Logs, &LogsArgs{
-			Logs: fmt.Sprintf("%s %s", pair[0], pair[1]),
+			Logs: fmt.Sprintf("%s %s\n", pair[0], pair[1]),
 		})
 		p.logger.Infoln(" ", pair[0], pair[1])
 	}

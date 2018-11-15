@@ -267,6 +267,18 @@ func (p *BasePipeline) LogEnvironment() {
 // container.
 func (p *BasePipeline) SyncEnvironment(sessionCtx context.Context, sess *Session) error {
 	p.logger.Debugln("Syncing environment")
+	p.logger.Infoln("Start Syncing environment")
+	e, _ := EmitterFromContext(sessionCtx)
+	e.Emit(Logs, &LogsArgs{
+		Logs: "Start Syncing environment",
+	})
+
+	for _, pair := range p.env.Ordered() {
+		e.Emit(Logs, &LogsArgs{
+			Logs: fmt.Sprintf("%s %s", pair[0], pair[1]),
+		})
+		p.logger.Infoln(" ", pair[0], pair[1])
+	}
 	var lines []string
 
 	sess.HideLogs()
@@ -312,6 +324,16 @@ func (p *BasePipeline) SyncEnvironment(sessionCtx context.Context, sess *Session
 		value := s[1]
 
 		p.env.Add(key, value)
+	}
+	p.logger.Infoln("End Syncing environment")
+	e.Emit(Logs, &LogsArgs{
+		Logs: "End Syncing environment",
+	})
+	for _, pair := range p.env.Ordered() {
+		e.Emit(Logs, &LogsArgs{
+			Logs: fmt.Sprintf("%s %s", pair[0], pair[1]),
+		})
+		p.logger.Infoln(" ", pair[0], pair[1])
 	}
 
 	return nil

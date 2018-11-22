@@ -468,10 +468,6 @@ func (p *Runner) StartStep(ctx *RunnerShared, step core.Step, order int) *util.F
 func (p *Runner) StartBuild(options *core.PipelineOptions) *util.Finisher {
 	p.emitter.Emit(core.BuildStarted, &core.BuildStartedArgs{Options: options})
 	return util.NewFinisher(func(result interface{}) {
-		//Deprovision any Remote Docker Daemon configured for this build
-		if p.rdd != nil {
-			p.rdd.Deprovision()
-		}
 		r, ok := result.(*core.BuildFinishedArgs)
 		if !ok {
 			return

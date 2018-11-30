@@ -1,5 +1,7 @@
 ## unreleased
 
+- Switch logs to json format(#535)
+
 ## v1.0.1421 (2018-11-22)
 
 - Fix problems with OCI environment settings passed to kiddie-pool for runners.

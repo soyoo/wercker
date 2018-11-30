@@ -45,6 +45,7 @@ type GlobalOptions struct {
 	Debug           bool
 	Verbose         bool
 	ShowColors      bool
+	LogJSON         bool
 
 	// Auth
 	AuthToken      string
@@ -80,6 +81,7 @@ func NewGlobalOptions(c util.Settings, e *util.Environment) (*GlobalOptions, err
 	baseURL = strings.TrimRight(baseURL, "/")
 	debug, _ := c.GlobalBool("debug")
 	verbose, _ := c.GlobalBool("verbose")
+	logJSON, _ := c.GlobalBool("log-json")
 	// TODO(termie): switch negative flag
 	showColors, _ := c.GlobalBool("no-colors")
 	showColors = !showColors
@@ -102,6 +104,7 @@ func NewGlobalOptions(c util.Settings, e *util.Environment) (*GlobalOptions, err
 		Debug:           debug,
 		Verbose:         verbose,
 		ShowColors:      showColors,
+		LogJSON:         logJSON,
 
 		AuthToken:      authToken,
 		AuthTokenStore: authTokenStore,

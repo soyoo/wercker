@@ -121,6 +121,7 @@ var (
 		cli.BoolFlag{Name: "verbose", Usage: "Print more information."},
 		cli.BoolFlag{Name: "no-colors", Usage: "Wercker output will not use colors (does not apply to step output)."},
 		cli.BoolFlag{Name: "debug", Usage: "Print additional debug information."},
+		cli.BoolFlag{Name: "log-json", Usage: "Print wercker-cli output in json format."},
 		cli.BoolFlag{Name: "journal", Usage: "Not used anymore", Hidden: true},
 	}
 

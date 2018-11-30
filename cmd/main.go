@@ -30,6 +30,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/fsouza/go-dockerclient"
 	"github.com/mreiferson/go-snappystream"
 	"github.com/wercker/wercker/api"
@@ -548,7 +550,14 @@ func GetApp() *cli.App {
 		workflowCommand,
 	}
 	app.Before = func(ctx *cli.Context) error {
-		if ctx.GlobalBool("debug") {
+		if ctx.GlobalBool("log-json") {
+			util.RootLogger().Formatter = &logrus.JSONFormatter{}
+			if ctx.GlobalBool("debug") {
+				util.RootLogger().SetLevel("debug")
+			} else {
+				util.RootLogger().SetLevel("info")
+			}
+		} else if ctx.GlobalBool("debug") {
 			util.RootLogger().Formatter = &util.VerboseFormatter{}
 			util.RootLogger().SetLevel("debug")
 		} else {

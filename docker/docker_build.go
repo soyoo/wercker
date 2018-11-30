@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -34,22 +35,23 @@ import (
 	"golang.org/x/net/context"
 )
 
-// DockerBuildStep needs to implemenet Step
+// DockerBuildStep needs to implement Step
 type DockerBuildStep struct {
 	*core.BaseStep
-	options       *core.PipelineOptions
-	dockerOptions *Options
-	data          map[string]string
-	tag           string
-	logger        *util.LogEntry
-	dockerfile    string
-	extrahosts    []string
-	q             bool
-	squash        bool
-	buildargs     map[string]*string
-	labels        map[string]string
-	nocache       bool
-	authConfigs   map[string]types.AuthConfig
+	options            *core.PipelineOptions
+	dockerOptions      *Options
+	data               map[string]string
+	tag                string
+	logger             *util.LogEntry
+	dockerfile         string
+	extrahosts         []string
+	q                  bool
+	squash             bool
+	buildargs          map[string]*string
+	labels             map[string]string
+	nocache            bool
+	authConfigs        map[string]types.AuthConfig
+	dockerBuildContext string
 }
 
 // NewDockerBuildStep is a special step for doing docker builds
@@ -174,6 +176,10 @@ func (s *DockerBuildStep) configure(env *util.Environment) error {
 			}
 		}
 		s.authConfigs = authConfigs
+	}
+
+	if dockerBuildContext, ok := s.data["context"]; ok {
+		s.dockerBuildContext = env.Interpolate(dockerBuildContext)
 	}
 	return nil
 }
@@ -332,7 +338,7 @@ func (s *DockerBuildStep) CollectArtifact(ctx context.Context, containerID strin
 
 func (s *DockerBuildStep) buildInputTar(sourceTar string, destTar string) error {
 	// In currentSource.tar, the source directory is in /source
-	// Copy all the files that are under /source in currentSource.tar
+	// Copy all the files that are under /source/ + context in currentSource.tar
 	// into the / directory of a new tarfile currentSourceInRoot.tar
 	artifactReader, err := os.Open(s.options.HostPath(sourceTar))
 	if err != nil {
@@ -350,6 +356,12 @@ func (s *DockerBuildStep) buildInputTar(sourceTar string, destTar string) error 
 
 	tr := tar.NewReader(artifactReader)
 	tw := tar.NewWriter(layerFile)
+
+	dockerBuildContext := "source"
+	if s.dockerBuildContext != "" {
+		dockerBuildContext = filepath.Join(dockerBuildContext, s.dockerBuildContext)
+	}
+	dockerBuildContext = dockerBuildContext + string(os.PathSeparator)
 
 	for {
 		hdr, err := tr.Next()
@@ -371,12 +383,10 @@ func (s *DockerBuildStep) buildInputTar(sourceTar string, destTar string) error 
 			continue
 		}
 
-		// copy files from /source into the root of the new tar
-		if strings.HasPrefix(hdr.Name, "source/") {
-			hdr.Name = hdr.Name[len("source/"):]
-		}
-
-		if len(hdr.Name) == 0 {
+		// Copy files under the specified build context into the root of the new tar
+		if strings.HasPrefix(hdr.Name, dockerBuildContext) {
+			hdr.Name = hdr.Name[len(dockerBuildContext):]
+		} else {
 			continue
 		}
 

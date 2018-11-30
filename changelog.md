@@ -1,5 +1,7 @@
 ## unreleased
 
+## v1.0.1429 (2018-11-30)
+
 - Add new property "context" to internal/docker-build (#537)
 - Switch logs to json format(#535)
 

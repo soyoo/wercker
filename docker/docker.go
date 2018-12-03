@@ -16,6 +16,7 @@ package dockerlocal
 
 import (
 	"archive/tar"
+	"bytes"
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/base64"
@@ -874,6 +875,13 @@ func (s *DockerPushStep) tagAndPush(ctx context.Context, imageRef string, e *cor
 				s.logger.Errorln("Failed to encode auth:", err)
 				return 1, err
 			}
+
+			authEncodedJSON, err = fixForGCR(authEncodedJSON, authConfig.Username, s.repository)
+			if err != nil {
+				s.logger.Errorln(err)
+				return 1, err
+			}
+
 			authStr := base64.URLEncoding.EncodeToString(authEncodedJSON)
 			imagePushOptions := types.ImagePushOptions{
 				RegistryAuth: authStr,
@@ -945,4 +953,29 @@ func validateTags(repository reference.Named, tags []string) error {
 		}
 	}
 	return nil
+}
+
+// fixForGCR verifies whether docker push is for a gcr repository and is using json key file
+// for authentication as described in https://cloud.google.com/container-registry/docs/advanced-authentication#json_key_file.
+// If yes, replaces all occurrences of \\n with \n from the encoded json
+func fixForGCR(authEncodedJSON []byte, username string, repository string) ([]byte, error) {
+	if username != "_json_key" {
+		return authEncodedJSON, nil
+	}
+
+	x, err := reference.ParseNormalizedNamed(repository)
+	// This error condition is impossible as we already check this in InferRegistryAndRepository but its better
+	// to not proceed with push if this indeed fails
+	if err != nil {
+		return nil, fmt.Errorf("%s is not a valid repository, error while validating repository name: %s", repository, err.Error())
+	}
+
+	hostNameFromRepository := reference.Domain(x)
+	isGCR := ("gcr.io" == hostNameFromRepository) || strings.HasSuffix(hostNameFromRepository, ".gcr.io")
+	if !isGCR {
+		return authEncodedJSON, nil
+	}
+
+	authEncodedJSON = bytes.Replace(authEncodedJSON, []byte("\\\\n"), []byte("\\n"), -1)
+	return authEncodedJSON, nil
 }

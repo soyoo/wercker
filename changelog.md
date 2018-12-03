@@ -1,5 +1,7 @@
 ## unreleased
 
+## v1.0.1432 (2018-12-03)
+
 - Fix for gcr push to encode newlines correctly (#542)
 
 ## v1.0.1429 (2018-11-30)

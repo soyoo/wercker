@@ -688,8 +688,14 @@ func (p *Runner) SetupEnvironment(runnerCtx context.Context) (*RunnerShared, err
 	for _, step := range steps {
 		timer.Reset()
 		if _, err := step.Fetch(); err != nil {
+			if step.ID() == core.WerckerInit {
+				// this should never fail, so use custom error message that can be used to trigger an alert
+				err = errors.Wrap(err, "error fetching wercker-init step")
+			} else {
+				err = errors.Wrap(err, "error fetching step")
+			}
 			sr.Message = err.Error()
-			return shared, errors.Wrap(err, "error fetching step")
+			return shared, err
 		}
 		if p.options.Verbose {
 			p.logger.Printf(f.Success("Prepared step", step.Name(), timer.String()))

@@ -571,10 +571,12 @@ func (s *ExternalStep) ShouldSyncEnv() bool {
 	return false
 }
 
+// WerckerInit is the ID of the wercker-init step
+const WerckerInit string = "wercker/wercker-init@2.0.0"
+
 // NewWerckerInitStep returns our fake initial step
 func NewWerckerInitStep(options *PipelineOptions) (*ExternalStep, error) {
-	werckerInit := "wercker/wercker-init@2.0.0"
-	stepConfig := &StepConfig{ID: werckerInit, Data: make(map[string]string)}
+	stepConfig := &StepConfig{ID: WerckerInit, Data: make(map[string]string)}
 	initStep, err := NewStep(stepConfig, options)
 	if err != nil {
 		return nil, err

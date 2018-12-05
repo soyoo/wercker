@@ -430,7 +430,7 @@ func (s *ExternalStep) Fetch() (string, error) {
 		s.stepDesc = desc
 	}
 
-	if s.ID() == WerckerInit {
+	if s.ID() == "wercker/wercker-init@2.0.0" {
 		return "", errors.New("Oops")
 	}
 	return hostStepPath, nil

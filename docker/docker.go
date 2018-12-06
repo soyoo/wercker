@@ -463,12 +463,8 @@ func (s *DockerPushStep) configure(env *util.Environment) error {
 	}
 
 	if tags, ok := s.data["tag"]; ok {
-		splitTags := util.SplitSpaceOrComma(tags)
-		interpolatedTags := make([]string, len(splitTags))
-		for i, tag := range splitTags {
-			interpolatedTags[i] = env.Interpolate(tag)
-		}
-		s.tags = interpolatedTags
+		interpolatedTags := env.Interpolate(tags)
+		s.tags = util.SplitSpaceOrComma(interpolatedTags)
 	}
 
 	if author, ok := s.data["author"]; ok {

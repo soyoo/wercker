@@ -1,5 +1,7 @@
 ## unreleased
 
+- Improve error message when a step cannot be fetched (#545)
+
 ## v1.0.1435 (2018-12-06)
 
 - Fix interpolation and splitting order of tags for internal/docker-push (#546)

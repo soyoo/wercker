@@ -688,8 +688,10 @@ func (p *Runner) SetupEnvironment(runnerCtx context.Context) (*RunnerShared, err
 	for _, step := range steps {
 		timer.Reset()
 		if _, err := step.Fetch(); err != nil {
+			// this message may be used to trigger an alert
+			err = errors.Wrap(err, fmt.Sprintf("error fetching step %s", step.DisplayName()))
 			sr.Message = err.Error()
-			return shared, errors.Wrap(err, "error fetching step")
+			return shared, err
 		}
 		if p.options.Verbose {
 			p.logger.Printf(f.Success("Prepared step", step.Name(), timer.String()))

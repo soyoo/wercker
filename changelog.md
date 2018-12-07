@@ -1,5 +1,7 @@
 ## unreleased
 
+## v1.0.1436 (2018-12-07)
+
 - Improve error message when a step cannot be fetched (#545)
 
 ## v1.0.1435 (2018-12-06)

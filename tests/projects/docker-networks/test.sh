@@ -13,7 +13,7 @@ testDockerNetworks () {
   testDir=$testsDir/docker-networks
   logFile="${workingDir}/docker-n-networks.log"
 
-  $wercker build "$testDir" --docker-local --working-dir "$workingDir" &> "${workingDir}/${testName}.log"
+  $wercker build "$testDir" --docker-local --working-dir "$workingDir" &> "${logFile}"
   if [ $? -eq 0 ]; then
     echo "passed"
     return 0

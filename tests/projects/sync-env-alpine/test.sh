@@ -8,11 +8,11 @@ if [ -z ${workingDir} ]; then workingDir=$PWD/../../../.werckertests; mkdir -p "
 if [ -z ${testsDir} ]; then testsDir=$PWD/..; mkdir -p "$testsDir"; fi
 
 testSyncEnv () {
-  testName=sync-env-pipeline
+  testName=sync-env-alpine
+  testDir=$testsDir/sync-env-alpine
   printf "testing %s... " "$testName"
-  
   # now run the build pipeline 
-  $wercker --environment "$PWD/ENVIRONMENT" build "$testDir" --working-dir "$workingDir" --docker-local &> "${workingDir}/${testName}.log"
+  $wercker --environment "$testDir/ENVIRONMENT" build "$testDir" --working-dir "$workingDir" --docker-local &> "${workingDir}/${testName}.log"
   if [ $? -ne 0 ]; then
     printf "failed\n"
     if [ "${workingDir}/${testName}.log" ]; then

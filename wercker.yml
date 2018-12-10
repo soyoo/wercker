@@ -137,7 +137,7 @@ integration-tests:
             export WERCKER_DEPLOY_ID=
 
             cd $GOPATH/src/github.com/wercker/wercker
-            sh ./test-all.sh
+            sh ./test-all.sh $INTEGRATION_TESTS_TO_RUN
         
     - script:
         name: Create dummy file in WERCKER_OUTPUT_DIR to prevent it storing the source directory at the end of the pipeline

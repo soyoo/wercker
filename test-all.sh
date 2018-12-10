@@ -108,7 +108,13 @@ testScratchPush () {
 }
 
 
-runTests() {
+runTests1() {
+  # Since most tests run with the --docker-local parameter we need to make sure that the required base images are pulled into the daemon
+  pullIfNeeded "alpine"
+  pullIfNeeded "ubuntu"
+  pullIfNeeded "postgres:9.6"
+  pullIfNeeded "nginx"
+  pullIfNeeded "interactivesolutions/eatmydata-mysql-server"  
 
   #  The following tests must be skipped when run in a wercker pipeline 
   if [ -z ${WERCKER_ROOT} ]; then 
@@ -147,8 +153,6 @@ runTests() {
   export X_BACKTICK='back`tick'
   basicTest "special char in envvar escaped" build "$testsDir/envvars" --docker-local --pipeline test-special || return 1
 
-  #return 1
-
   # test different shells
   basicTest "bash_or_sh alpine"   build "$testsDir/bash_or_sh" --docker-local --pipeline test-alpine  || return 1
   basicTest "bash_or_sh busybox"  build "$testsDir/bash_or_sh" --docker-local --pipeline test-busybox || return 1
@@ -168,15 +172,23 @@ runTests() {
   basicTestFail "empty wercker file" build "$testsDir/invalid-config" --docker-local || return 1
   grep -q "Your wercker.yml is empty." "${workingDir}/empty wercker file.log" || return 1
 
+ }
+
+runTests2() {
+  # Since most tests run with the --docker-local parameter we need to make sure that the required base images are pulled into the daemon
+  pullIfNeeded "alpine"
+  pullIfNeeded "alpine:3.8"
+  pullIfNeeded "golang"
+
   basicTest "multiple services with the same image" build "$testsDir/multidb" || return 1
 
   testScratchPush || return 1
 
-    # The following test fails if we don't first clean out the working directory
+   # The following test fails if we don't first clean out the working directory
   rm -rf "${workingDir}"; mkdir -p "$workingDir"
 
   # make sure the build successfully completes when cache is too big
-  basicTest "cache size too big" build "$testsDir/cache-size" --docker-local || return 1
+  basicTest "cache size too big" build "$testsDir/cache-size" --docker-local || return 1  
 
   # The following test fails if we don't first clean out the working directory
   rm -rf "${workingDir}"; mkdir -p "$workingDir"
@@ -217,6 +229,15 @@ runTests() {
   source $testsDir/sync-env-alpine/test.sh || return 1
 }
 
-pullImages
-runTests || exit 1
+# The tests in this file are divided into two, runTest1 and runTest2,
+# which can be run in parallel pipelines
+# This script takes one optional argument, which must be runTest1 or runTest2
+if [ -z $1 ]; then
+  # no parameter supplied - run all tests
+  runTests1 || exit 1
+  runTests2 || exit 1
+else
+  # parameter supplied - run the specified set of tests
+  $1 || exit 1
+fi
 rm -rf "$workingDir"

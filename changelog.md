@@ -1,5 +1,7 @@
 ## unreleased
 
+- Add retry mechanism for fetching step version and tarball (#550)
+
 ## v1.0.1436 (2018-12-07)
 
 - Improve error message when a step cannot be fetched (#545)

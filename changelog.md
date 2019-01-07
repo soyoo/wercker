@@ -1,5 +1,7 @@
 ## unreleased
 
+## v1.0.1467 (2019-01-07)
+
 - Gracefully handle failure when docker-push has an invalid label specification (#553)
 
 ## v1.0.1442 (2018-12-13)

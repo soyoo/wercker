@@ -62,6 +62,34 @@ func (s *PushSuite) TestEmptyPush() {
 	s.Empty(step.repository)
 }
 
+// TestLabelsInvalid tests that if the labels property contains a label specification
+// which is not of the form label=value then the correct error is returned.
+func (s *PushSuite) TestLabelSpecificationInvalid() {
+
+	stepData := make(map[string]string)
+	stepData["username"] = "user"
+	stepData["password"] = "pass"
+	stepData["repository"] = repoSuccessful
+	stepData["registry"] = "https://quay.io"
+	stepData["tag"] = repoSuccessfulImageTag
+	stepData["labels"] = "label1=value1 label2value2 label3=value3"
+
+	config := &core.StepConfig{
+		ID:   "internal/docker-push",
+		Data: stepData,
+	}
+
+	options := &core.PipelineOptions{
+		WerckerContainerRegistry: &url.URL{Scheme: "https", Host: "myregistry.io", Path: "/v2/"},
+	}
+
+	step, err := NewDockerPushStep(config, options, nil)
+	s.NoError(err)
+	ctx := core.NewEmitterContext(context.TODO())
+	err = step.InitEnv(ctx, nil)
+	s.Equal("label specification label2value2 is not of the form label=value", err.Error())
+}
+
 func (s *PushSuite) TestInferRegistryAndRepository() {
 	repoTests := []struct {
 		registry           string

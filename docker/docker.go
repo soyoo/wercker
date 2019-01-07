@@ -550,6 +550,9 @@ func (s *DockerPushStep) configure(env *util.Environment) error {
 			labelMap := make(map[string]string)
 			for _, labelPair := range parsedLabels {
 				pair := strings.Split(labelPair, "=")
+				if len(pair) != 2 {
+					return fmt.Errorf("label specification %s is not of the form label=value", labelPair)
+				}
 				labelMap[env.Interpolate(pair[0])] = env.Interpolate(pair[1])
 			}
 			s.labels = labelMap

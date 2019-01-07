@@ -1,5 +1,7 @@
 ## unreleased
 
+- Gracefully handle failure when docker-push has an invalid label specification (#553)
+
 ## v1.0.1442 (2018-12-13)
 
 - Add retry mechanism for fetching step version and tarball (#550)

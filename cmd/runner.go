@@ -448,17 +448,11 @@ func (p *Runner) StartStep(ctx *RunnerShared, step core.Step, order int) *util.F
 		Order: order,
 	})
 	return util.NewFinisher(func(result interface{}) {
-		logger := util.RootLogger().WithFields(util.LogFields{
-			"Logger": "NewFinisher",
-		})
-
 		r := result.(*StepResult)
 		artifactURL := ""
 		if r.Artifact != nil {
 			artifactURL = r.Artifact.URL()
 		}
-		logger.Infoln("Sending BuildStepFinished: ")
-		logger.Infoln(r.Success)
 		p.emitter.Emit(core.BuildStepFinished, &core.BuildStepFinishedArgs{
 			Box:                 ctx.box,
 			Successful:          r.Success,
@@ -556,6 +550,7 @@ func (p *Runner) SetupEnvironment(runnerCtx context.Context) (*RunnerShared, err
 		ID: "setup-env-failed",
 		F: func() bool {
 			p.logger.Errorln("Interrupt detected in SetupEnvironment")
+			sr.Message = "Step interrupted"
 			finisher.Finish(sr)
 			return true
 		},

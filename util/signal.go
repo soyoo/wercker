@@ -42,7 +42,6 @@ func NewSignalMonkey() *SignalMonkey {
 
 // Add a handler to our array
 func (s *SignalMonkey) Add(fn *SignalHandler) {
-	println("SignalMonkey.Add: " + fn.ID)
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 	s.handlers = append(s.handlers, fn)

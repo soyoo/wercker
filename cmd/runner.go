@@ -812,6 +812,18 @@ func (p *Runner) RunStep(ctx context.Context, shared *RunnerShared, step core.St
 	}
 	defer finisher.Finish(sr)
 
+	buildFailedHandler := &util.SignalHandler{
+		ID: step.ID(),
+		F: func() bool {
+			p.logger.Errorln("Interrupt detected in " + step.Name())
+			sr.Message = "Step interrupted"
+			finisher.Finish(sr)
+			return true
+		},
+	}
+	util.GlobalSigint().Add(buildFailedHandler)
+	defer util.GlobalSigint().Remove(buildFailedHandler)
+
 	if step.ShouldSyncEnv() {
 		err := shared.pipeline.SyncEnvironment(shared.sessionCtx, shared.sess)
 		if err != nil {

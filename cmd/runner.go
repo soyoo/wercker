@@ -815,7 +815,7 @@ func (p *Runner) RunStep(ctx context.Context, shared *RunnerShared, step core.St
 	buildFailedHandler := &util.SignalHandler{
 		ID: step.ID(),
 		F: func() bool {
-			p.logger.Errorln("Interrupt detected")
+			p.logger.Errorln("Interrupt detected in " + step.Name())
 			sr.Message = "Step interrupted"
 			finisher.Finish(sr)
 			return true

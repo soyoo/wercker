@@ -28,7 +28,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/termie/go-shutil"
 	"github.com/wercker/wercker/core"
-	"github.com/wercker/wercker/docker"
+	dockerlocal "github.com/wercker/wercker/docker"
 	"github.com/wercker/wercker/event"
 	"github.com/wercker/wercker/rdd"
 	"github.com/wercker/wercker/util"
@@ -448,11 +448,17 @@ func (p *Runner) StartStep(ctx *RunnerShared, step core.Step, order int) *util.F
 		Order: order,
 	})
 	return util.NewFinisher(func(result interface{}) {
+		logger := util.RootLogger().WithFields(util.LogFields{
+			"Logger": "NewFinisher",
+		})
+
 		r := result.(*StepResult)
 		artifactURL := ""
 		if r.Artifact != nil {
 			artifactURL = r.Artifact.URL()
 		}
+		logger.Infoln("Sending BuildStepFinished: " + step.DisplayName())
+		logger.Infoln(r.Success)
 		p.emitter.Emit(core.BuildStepFinished, &core.BuildStepFinishedArgs{
 			Box:                 ctx.box,
 			Successful:          r.Success,
@@ -498,6 +504,32 @@ func (p *Runner) StartFullPipeline(options *core.PipelineOptions) *util.Finisher
 // box, and session. This is a bit of a long method, but it is pretty much
 // the entire "Setup Environment" step.
 func (p *Runner) SetupEnvironment(runnerCtx context.Context) (*RunnerShared, error) {
+	// Register our signal handler to clean the box up
+	// NOTE(termie): we're expecting that this is going to be the last handler
+	//               to be run since it calls exit, in the future we might be
+	//               able to do something like close the calling context and
+	//               short circuit / let the rest of things play out
+	var box core.Box
+	boxCleanupHandler := &util.SignalHandler{
+		ID: "box-cleanup",
+		F: func() bool {
+			p.logger.Errorln("Interrupt detected, cleaning up containers and shutting down")
+			if p.rdd != nil {
+				p.rdd.Deprovision()
+			}
+			if box != nil {
+				box.Stop()
+				if p.options.ShouldRemove {
+					box.Clean()
+				}
+			}
+			os.Exit(1)
+			return true
+		},
+	}
+	util.GlobalSigint().Add(boxCleanupHandler)
+	util.GlobalSigterm().Add(boxCleanupHandler)
+
 	shared := &RunnerShared{}
 	f := &util.Formatter{ShowColors: p.options.GlobalOptions.ShowColors}
 	timer := util.NewTimer()
@@ -519,6 +551,17 @@ func (p *Runner) SetupEnvironment(runnerCtx context.Context) (*RunnerShared, err
 	}
 	finisher := p.StartStep(shared, setupEnvironmentStep, 2)
 	defer finisher.Finish(sr)
+
+	buildFailedHandler := &util.SignalHandler{
+		ID: "setup-env-failed",
+		F: func() bool {
+			p.logger.Errorln("Interrupt detected in SetupEnvironment")
+			finisher.Finish(sr)
+			return true
+		},
+	}
+	util.GlobalSigint().Add(buildFailedHandler)
+	defer util.GlobalSigint().Remove(buildFailedHandler)
 
 	if p.options.Verbose {
 		p.emitter.Emit(core.Logs, &core.LogsArgs{
@@ -643,7 +686,7 @@ func (p *Runner) SetupEnvironment(runnerCtx context.Context) (*RunnerShared, err
 
 	// Fetch the box
 	timer.Reset()
-	box := pipeline.Box()
+	box = pipeline.Box()
 	_, err = box.Fetch(runnerCtx, pipeline.Env())
 	if err != nil {
 		sr.Message = err.Error()
@@ -720,29 +763,6 @@ func (p *Runner) SetupEnvironment(runnerCtx context.Context) (*RunnerShared, err
 		return shared, errors.Wrap(err, "error running the box")
 	}
 	shared.containerID = container.ID
-
-	// Register our signal handler to clean the box up
-	// NOTE(termie): we're expecting that this is going to be the last handler
-	//               to be run since it calls exit, in the future we might be
-	//               able to do something like close the calling context and
-	//               short circuit / let the rest of things play out
-	boxCleanupHandler := &util.SignalHandler{
-		ID: "box-cleanup",
-		F: func() bool {
-			p.logger.Errorln("Interrupt detected, cleaning up containers and shutting down")
-			if p.rdd != nil {
-				p.rdd.Deprovision()
-			}
-			box.Stop()
-			if p.options.ShouldRemove {
-				box.Clean()
-			}
-			os.Exit(1)
-			return true
-		},
-	}
-	util.GlobalSigint().Add(boxCleanupHandler)
-	util.GlobalSigterm().Add(boxCleanupHandler)
 
 	p.logger.Debugln("Attaching session to base box")
 	// Start our session

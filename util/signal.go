@@ -42,6 +42,7 @@ func NewSignalMonkey() *SignalMonkey {
 
 // Add a handler to our array
 func (s *SignalMonkey) Add(fn *SignalHandler) {
+	println("SignalMonkey.Add: " + fn.ID)
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 	s.handlers = append(s.handlers, fn)
@@ -58,6 +59,7 @@ func (s *SignalMonkey) Remove(fn *SignalHandler) {
 			copy(s.handlers[i:], s.handlers[i+1:])
 			s.handlers[len(s.handlers)-1] = nil // or the zero value of T
 			s.handlers = s.handlers[:len(s.handlers)-1]
+			return
 		}
 	}
 }
@@ -73,7 +75,6 @@ func (s *SignalMonkey) Dispatch() {
 		// https://code.google.com/p/go-wiki/wiki/SliceTricks
 		fn, a := s.handlers[len(s.handlers)-1], s.handlers[:len(s.handlers)-1]
 		s.handlers = a
-
 		result := fn.F()
 		if result == false {
 			break

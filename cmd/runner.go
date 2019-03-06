@@ -457,7 +457,7 @@ func (p *Runner) StartStep(ctx *RunnerShared, step core.Step, order int) *util.F
 		if r.Artifact != nil {
 			artifactURL = r.Artifact.URL()
 		}
-		logger.Infoln("Sending BuildStepFinished: " + step.DisplayName())
+		logger.Infoln("Sending BuildStepFinished: ")
 		logger.Infoln(r.Success)
 		p.emitter.Emit(core.BuildStepFinished, &core.BuildStepFinishedArgs{
 			Box:                 ctx.box,

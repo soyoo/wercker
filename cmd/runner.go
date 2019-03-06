@@ -817,6 +817,8 @@ func (p *Runner) RunStep(ctx context.Context, shared *RunnerShared, step core.St
 		F: func() bool {
 			p.logger.Errorln("Interrupt detected in " + step.Name())
 			sr.Message = "Step interrupted"
+			sr.Success = false
+			st.ExitCode = 1
 			finisher.Finish(sr)
 			return true
 		},

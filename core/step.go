@@ -570,14 +570,3 @@ func (s *ExternalStep) ReportPath(p ...string) string {
 func (s *ExternalStep) ShouldSyncEnv() bool {
 	return false
 }
-
-// NewWerckerInitStep returns our fake initial step
-func NewWerckerInitStep(options *PipelineOptions) (*ExternalStep, error) {
-	werckerInit := "wercker/wercker-init@2.0.0"
-	stepConfig := &StepConfig{ID: werckerInit, Data: make(map[string]string)}
-	initStep, err := NewStep(stepConfig, options)
-	if err != nil {
-		return nil, err
-	}
-	return initStep, nil
-}

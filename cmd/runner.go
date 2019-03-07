@@ -804,7 +804,7 @@ type StepResult struct {
 // RunStep runs a step and tosses error if it fails
 func (p *Runner) RunStep(ctx context.Context, shared *RunnerShared, step core.Step, order int) (*StepResult, error) {
 	var finisher *util.Finisher
-	buildFailedHandler := &util.SignalHandler{
+	stepInterruptedHandler := &util.SignalHandler{
 		ID: step.ID(),
 		F: func() bool {
 			if finisher != nil {
@@ -821,8 +821,8 @@ func (p *Runner) RunStep(ctx context.Context, shared *RunnerShared, step core.St
 			return true
 		},
 	}
-	util.GlobalSigint().Add(buildFailedHandler)
-	defer util.GlobalSigint().Remove(buildFailedHandler)
+	util.GlobalSigint().Add(stepInterruptedHandler)
+	defer util.GlobalSigint().Remove(stepInterruptedHandler)
 
 	finisher = p.StartStep(shared, step, order)
 	sr := &StepResult{

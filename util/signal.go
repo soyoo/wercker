@@ -19,7 +19,7 @@ import (
 	"os/signal"
 	"sync"
 
-	"github.com/nigeldeakin/wercker/util"
+	"github.com/wercker/wercker/util"
 )
 
 // SignalHandler is a little struct to hold our signal handling functions

@@ -448,6 +448,7 @@ func (p *Runner) StartStep(ctx *RunnerShared, step core.Step, order int) *util.F
 		Order: order,
 	})
 	return util.NewFinisher(func(result interface{}) {
+		p.logger.Errorln("Running step finisher for " + step.DisplayName())
 		r := result.(*StepResult)
 		artifactURL := ""
 		if r.Artifact != nil {
@@ -808,7 +809,7 @@ func (p *Runner) RunStep(ctx context.Context, shared *RunnerShared, step core.St
 		ID: step.ID(),
 		F: func() bool {
 			if finisher != nil {
-				p.logger.Errorln("Interrupt detected in " + step.Name() + " so sending step finished event")
+				p.logger.Errorln("Interrupt detected in step " + step.DisplayName() + " so sending step finished event")
 				finisher.Finish(&StepResult{
 					Success:  false,
 					Artifact: nil,
@@ -816,7 +817,7 @@ func (p *Runner) RunStep(ctx context.Context, shared *RunnerShared, step core.St
 					ExitCode: 1,
 				})
 			} else {
-				p.logger.Errorln("Interrupt detected in " + step.Name() + " but finisher not set yet")
+				p.logger.Errorln("Interrupt detected iin step " + step.DisplayName() + " but finisher not set yet")
 			}
 			return true
 		},

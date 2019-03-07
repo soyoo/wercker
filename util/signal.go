@@ -58,7 +58,6 @@ func (s *SignalMonkey) Remove(fn *SignalHandler) {
 			copy(s.handlers[i:], s.handlers[i+1:])
 			s.handlers[len(s.handlers)-1] = nil // or the zero value of T
 			s.handlers = s.handlers[:len(s.handlers)-1]
-			return
 		}
 	}
 }

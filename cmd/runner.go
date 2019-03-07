@@ -803,6 +803,16 @@ type StepResult struct {
 
 // RunStep runs a step and tosses error if it fails
 func (p *Runner) RunStep(ctx context.Context, shared *RunnerShared, step core.Step, order int) (*StepResult, error) {
+
+	earlyInterruptHandler := &util.SignalHandler{
+		ID: step.ID(),
+		F: func() bool {
+			p.logger.Errorln("Early Interrupt detected in " + step.Name())
+			return true
+		},
+	}
+	util.GlobalSigint().Add(earlyInterruptHandler)
+
 	finisher := p.StartStep(shared, step, order)
 	sr := &StepResult{
 		Success:  false,
@@ -811,6 +821,8 @@ func (p *Runner) RunStep(ctx context.Context, shared *RunnerShared, step core.St
 		ExitCode: 1,
 	}
 	defer finisher.Finish(sr)
+
+	util.GlobalSigint().Remove(earlyInterruptHandler)
 
 	buildFailedHandler := &util.SignalHandler{
 		ID: step.ID(),

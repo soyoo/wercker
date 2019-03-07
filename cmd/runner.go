@@ -448,7 +448,6 @@ func (p *Runner) StartStep(ctx *RunnerShared, step core.Step, order int) *util.F
 		Order: order,
 	})
 	return util.NewFinisher(func(result interface{}) {
-		util.RootLogger().WithField("Logger", "Runner").Errorln("Running step finisher for " + step.DisplayName())
 		r := result.(*StepResult)
 		artifactURL := ""
 		if r.Artifact != nil {
@@ -649,7 +648,6 @@ func (p *Runner) SetupEnvironment(runnerCtx context.Context) (*RunnerShared, err
 
 			rddURI, err = rddImpl.Provision(runnerCtx)
 			if err != nil {
-				util.RootLogger().WithField("Logger", "SetupEnvironment").Errorln("Error provisioning RDD:" + err.Error())
 				rddImpl.Deprovision()
 				sr.Message = err.Error()
 				return shared, errors.Wrapf(err, "error provisioning rdd for %s",
@@ -820,7 +818,7 @@ func (p *Runner) RunStep(ctx context.Context, shared *RunnerShared, step core.St
 		ID: step.ID(),
 		F: func() bool {
 			if finisher != nil {
-				p.logger.Errorln("Interrupt detected in step " + step.DisplayName() + " so sending step finished event")
+				p.logger.Errorf("Interrupt detected in step %s so sending step finished event\n", step.DisplayName())
 				finisher.Finish(&StepResult{
 					Success:  false,
 					Artifact: nil,
@@ -828,7 +826,7 @@ func (p *Runner) RunStep(ctx context.Context, shared *RunnerShared, step core.St
 					ExitCode: 1,
 				})
 			} else {
-				p.logger.Errorln("Interrupt detected in step " + step.DisplayName() + " but finisher not set yet")
+				p.logger.Errorf("Interrupt detected in step %s but finisher not set yet\n", step.DisplayName())
 			}
 			return true
 		},

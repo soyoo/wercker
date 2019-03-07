@@ -73,6 +73,7 @@ func (s *SignalMonkey) Dispatch() {
 		// https://code.google.com/p/go-wiki/wiki/SliceTricks
 		fn, a := s.handlers[len(s.handlers)-1], s.handlers[:len(s.handlers)-1]
 		s.handlers = a
+
 		result := fn.F()
 		if result == false {
 			break

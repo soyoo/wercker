@@ -649,6 +649,7 @@ func (p *Runner) SetupEnvironment(runnerCtx context.Context) (*RunnerShared, err
 
 			rddURI, err = rddImpl.Provision(runnerCtx)
 			if err != nil {
+				util.RootLogger().WithField("Logger", "SetupEnvironment").Errorln("Error provisioning RDD:" + err.Error())
 				rddImpl.Deprovision()
 				sr.Message = err.Error()
 				return shared, errors.Wrapf(err, "error provisioning rdd for %s",

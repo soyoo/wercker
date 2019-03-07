@@ -544,20 +544,30 @@ func (p *Runner) SetupEnvironment(runnerCtx context.Context) (*RunnerShared, err
 			SafeID:  "setup environment",
 		}),
 	}
-	finisher := p.StartStep(shared, setupEnvironmentStep, 2)
-	defer finisher.Finish(sr)
 
-	buildFailedHandler := &util.SignalHandler{
+	var finisher *util.Finisher
+	stepInterruptedHandler := &util.SignalHandler{
 		ID: "setup-env-failed",
 		F: func() bool {
-			p.logger.Errorln("Interrupt detected in SetupEnvironment")
-			sr.Message = "Step interrupted"
-			finisher.Finish(sr)
+			if finisher != nil {
+				p.logger.Errorln("Interrupt detected in setup environment: sending step failed event")
+				finisher.Finish(&StepResult{
+					Success:  false,
+					Artifact: nil,
+					Message:  "Step interrupted",
+					ExitCode: 1,
+				})
+			} else {
+				p.logger.Errorln("Interrupt detected in setup environment but finisher not set yet")
+			}
 			return true
 		},
 	}
-	util.GlobalSigint().Add(buildFailedHandler)
-	defer util.GlobalSigint().Remove(buildFailedHandler)
+	util.GlobalSigint().Add(stepInterruptedHandler)
+	defer util.GlobalSigint().Remove(stepInterruptedHandler)
+
+	finisher = p.StartStep(shared, setupEnvironmentStep, 2)
+	defer finisher.Finish(sr)
 
 	if p.options.Verbose {
 		p.emitter.Emit(core.Logs, &core.LogsArgs{
@@ -817,7 +827,7 @@ func (p *Runner) RunStep(ctx context.Context, shared *RunnerShared, step core.St
 					ExitCode: 1,
 				})
 			} else {
-				p.logger.Errorln("Interrupt detected iin step " + step.DisplayName() + " but finisher not set yet")
+				p.logger.Errorln("Interrupt detected in step " + step.DisplayName() + " but finisher not set yet")
 			}
 			return true
 		},

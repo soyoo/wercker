@@ -49,7 +49,6 @@ func (s *SignalMonkey) Add(fn *SignalHandler) {
 
 // Remove a handler from our array
 func (s *SignalMonkey) Remove(fn *SignalHandler) {
-	RootLogger().WithField("Logger", "Remove").Errorln("Removing SignalHandler:" + fn.ID)
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 	for i, x := range s.handlers {
@@ -59,6 +58,7 @@ func (s *SignalMonkey) Remove(fn *SignalHandler) {
 			copy(s.handlers[i:], s.handlers[i+1:])
 			s.handlers[len(s.handlers)-1] = nil // or the zero value of T
 			s.handlers = s.handlers[:len(s.handlers)-1]
+			return
 		}
 	}
 }

@@ -812,8 +812,6 @@ func (p *Runner) RunStep(ctx context.Context, shared *RunnerShared, step core.St
 	}
 	defer finisher.Finish(sr)
 
-	util.GlobalSigint().Remove(earlyInterruptHandler)
-
 	buildFailedHandler := &util.SignalHandler{
 		ID: step.ID(),
 		F: func() bool {

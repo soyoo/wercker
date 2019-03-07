@@ -448,7 +448,7 @@ func (p *Runner) StartStep(ctx *RunnerShared, step core.Step, order int) *util.F
 		Order: order,
 	})
 	return util.NewFinisher(func(result interface{}) {
-		p.logger.Errorln("Running step finisher for " + step.DisplayName())
+		util.RootLogger().WithField("Logger", "Runner").Errorln("Running step finisher for " + step.DisplayName())
 		r := result.(*StepResult)
 		artifactURL := ""
 		if r.Artifact != nil {

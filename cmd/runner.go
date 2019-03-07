@@ -803,7 +803,28 @@ type StepResult struct {
 
 // RunStep runs a step and tosses error if it fails
 func (p *Runner) RunStep(ctx context.Context, shared *RunnerShared, step core.Step, order int) (*StepResult, error) {
-	finisher := p.StartStep(shared, step, order)
+	var finisher *util.Finisher
+	buildFailedHandler := &util.SignalHandler{
+		ID: step.ID(),
+		F: func() bool {
+			if finisher != nil {
+				p.logger.Errorln("Interrupt detected in " + step.Name() + " so sending step finished event")
+				finisher.Finish(&StepResult{
+					Success:  false,
+					Artifact: nil,
+					Message:  "Step interrupted",
+					ExitCode: 1,
+				})
+			} else {
+				p.logger.Errorln("Interrupt detected in " + step.Name() + " but finisher not set yet")
+			}
+			return true
+		},
+	}
+	util.GlobalSigint().Add(buildFailedHandler)
+	defer util.GlobalSigint().Remove(buildFailedHandler)
+
+	finisher = p.StartStep(shared, step, order)
 	sr := &StepResult{
 		Success:  false,
 		Artifact: nil,
@@ -811,22 +832,6 @@ func (p *Runner) RunStep(ctx context.Context, shared *RunnerShared, step core.St
 		ExitCode: 1,
 	}
 	defer finisher.Finish(sr)
-
-	buildFailedHandler := &util.SignalHandler{
-		ID: step.ID(),
-		F: func() bool {
-			p.logger.Errorln("Interrupt detected in " + step.Name())
-			finisher.Finish(&StepResult{
-				Success:  false,
-				Artifact: nil,
-				Message:  "Step interrupted",
-				ExitCode: 1,
-			})
-			return true
-		},
-	}
-	util.GlobalSigint().Add(buildFailedHandler)
-	defer util.GlobalSigint().Remove(buildFailedHandler)
 
 	if step.ShouldSyncEnv() {
 		err := shared.pipeline.SyncEnvironment(shared.sessionCtx, shared.sess)

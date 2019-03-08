@@ -215,7 +215,7 @@ runTests2() {
 
   # test checkpointers
   basicTest "checkpoint, part 1"      build "$testsDir/checkpoint" --docker-local --enable-dev-steps || return 1
-  basicTestFail "checkpoint, part 2"  build "$testsDir/checkpoint" --docker-local --checkpoint foo || return 1
+  basicTestFail "checkpoint, part 2"  build "$testsDir/checkpoint" --docker-local --enable-dev-steps=false --checkpoint foo || return 1
   basicTest "checkpoint, part 3"      build "$testsDir/checkpoint" --docker-local --enable-dev-steps --checkpoint foo || return 1
 
   # fetching and pushing

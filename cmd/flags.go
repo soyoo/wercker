@@ -151,7 +151,7 @@ var (
 		cli.StringSliceFlag{Name: "publish", Value: &cli.StringSlice{}, Usage: "[Deprecated] Use: --expose-ports. - Publish a port from the main container, same format as docker --publish.", Hidden: true},
 		cli.BoolFlag{Name: "attach-on-error", Usage: "Attach shell to container if a step fails.", Hidden: true},
 		cli.BoolFlag{Name: "enable-volumes", Usage: "Mount local files and directories as volumes to your wercker container, specified in your wercker.yml."},
-		cli.BoolFlag{Name: "enable-dev-steps", Hidden: true, Usage: `
+		cli.BoolTFlag{Name: "enable-dev-steps", Hidden: true, Usage: `
 		Enable internal dev steps.
 		This enables:
 		- internal/watch
@@ -166,7 +166,7 @@ var (
 		// deprecated
 		cli.StringSliceFlag{Name: "publish", Value: &cli.StringSlice{}, Usage: "[Deprecated] Use: --expose-ports. - Publish a port from the main container, same format as docker --publish.", Hidden: true},
 		cli.BoolFlag{Name: "attach-on-error", Usage: "Attach shell to container if a step fails.", Hidden: true},
-		cli.BoolFlag{Name: "enable-dev-steps", Hidden: true, Usage: `
+		cli.BoolTFlag{Name: "enable-dev-steps", Hidden: true, Usage: `
 		Enable internal dev steps.
 		This enables:
 		- internal/watch

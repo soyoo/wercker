@@ -1,5 +1,8 @@
 ## unreleased
 
+- Turn on enable-dev-steps flag by default (#560)
+- Make wercker-init to be an embedded step (#558)
+
 ## v1.0.1467 (2019-01-07)
 
 - Gracefully handle failure when docker-push has an invalid label specification (#553)

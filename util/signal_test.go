@@ -168,5 +168,5 @@ func (s *SignalSuite) TestSignalMonkeyAddRemoveDupIDs() {
 	s.Equal(handler2.ID, sm.handlers[1].ID)
 
 	sm.Remove(handler1)
-	s.Equal(1, len(sm.handlers))
+	s.Equal(0, len(sm.handlers))
 }
